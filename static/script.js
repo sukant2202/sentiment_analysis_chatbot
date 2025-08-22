@@ -34,16 +34,16 @@ class SentimentBotPro {
         this.confidenceLabel = document.getElementById('confidenceLabel');
         
         // Progress bars
-        this.textblobProgress = document.getElementById('textblobProgress');
-        this.vaderProgress = document.getElementById('vaderProgress');
         this.keywordProgress = document.getElementById('keywordProgress');
         this.ruleProgress = document.getElementById('ruleProgress');
+        this.emoticonProgress = document.getElementById('emoticonProgress');
+        this.punctuationProgress = document.getElementById('punctuationProgress');
         
         // Scores
-        this.textblobScore = document.getElementById('textblobScore');
-        this.vaderScore = document.getElementById('vaderScore');
         this.keywordScore = document.getElementById('keywordScore');
         this.ruleScore = document.getElementById('ruleScore');
+        this.emoticonScore = document.getElementById('emoticonScore');
+        this.punctuationScore = document.getElementById('punctuationScore');
         
         // Long conversation elements
         this.messageCountElement = document.getElementById('messageCount');
@@ -99,6 +99,23 @@ class SentimentBotPro {
         });
     }
 
+    updateStatus(status) {
+        const statusText = this.statusIndicator.querySelector('.status-text');
+        const statusDot = this.statusIndicator.querySelector('.status-dot');
+        
+        statusText.textContent = status;
+        
+        // Update status dot color
+        statusDot.className = 'status-dot';
+        if (status === 'Ready') {
+            statusDot.classList.add('ready');
+        } else if (status === 'Typing...') {
+            statusDot.classList.add('typing');
+        } else if (status === 'Error') {
+            statusDot.classList.add('error');
+        }
+    }
+
     generateSessionId() {
         return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
@@ -107,126 +124,51 @@ class SentimentBotPro {
         const message = this.userInput.value.trim();
         if (!message) return;
 
-        // Clear input and add loading state
-        this.userInput.value = '';
-        this.setLoadingState(true);
-        this.updateStatus('Analyzing...');
-
         // Add user message to chat
-        this.addMessage(message, 'user');
+        this.addMessageToChat(message, 'user');
+        this.userInput.value = '';
+        this.userInput.style.height = 'auto';
+
+        // Update status
+        this.updateStatus('Typing...');
         this.messageCount++;
 
         try {
-            const response = await this.analyzeSentiment(message);
-            this.handleResponse(response);
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    session_id: this.sessionId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                // Add bot response to chat
+                this.addMessageToChat(data.bot_response, 'bot');
+                
+                // Update sentiment analysis
+                this.updateSentimentAnalysis(data.sentiment_analysis);
+                
+                // Update conversation stats
+                this.updateConversationStats();
+                
+                this.updateStatus('Ready');
+            } else {
+                throw new Error(data.error || 'Unknown error occurred');
+            }
         } catch (error) {
             console.error('Error:', error);
-            this.addMessage('Sorry, I encountered an error while analyzing your message. Please try again.', 'bot');
+            this.addMessageToChat('Sorry, I encountered an error while analyzing your message. Please try again.', 'bot');
             this.updateStatus('Error');
-        } finally {
-            this.setLoadingState(false);
-            this.updateStatus('Ready');
         }
     }
 
-    async analyzeSentiment(message) {
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                message: message,
-                session_id: this.sessionId
-            }),
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        return await response.json();
-    }
-
-    handleResponse(response) {
-        // Add bot response to chat
-        this.addMessage(response.bot_response, 'bot');
-        
-        // Update sentiment visualization
-        this.updateSentimentVisualization(response.sentiment_analysis);
-        
-        // Update long conversation features
-        this.updateLongConversationFeatures(response);
-        
-        // Scroll to bottom
-        this.scrollToBottom();
-    }
-
-    updateLongConversationFeatures(response) {
-        // Update conversation summary
-        this.updateConversationSummary(response.conversation_summary);
-        
-        // Update topic detection
-        this.updateTopicDetection(response.detected_topics);
-        
-        // Update suggestions
-        this.updateSuggestions(response.suggestions);
-        
-        // Update conversation duration
-        this.updateConversationDuration();
-    }
-
-    updateConversationSummary(summary) {
-        if (summary && typeof summary === 'object') {
-            this.messageCountElement.textContent = summary.total_messages || this.messageCount;
-            this.engagementLevelElement.textContent = summary.engagement_level || 'Low';
-        }
-    }
-
-    updateTopicDetection(topics) {
-        if (topics && topics.length > 0) {
-            this.topicsList.innerHTML = '';
-            topics.forEach(topic => {
-                const topicTag = document.createElement('span');
-                topicTag.className = `topic-tag topic-${topic}`;
-                topicTag.textContent = this.formatTopicName(topic);
-                this.topicsList.appendChild(topicTag);
-            });
-        } else if (this.topicsList.querySelector('.no-topics')) {
-            // Keep the no-topics message if no topics detected
-        }
-    }
-
-    formatTopicName(topic) {
-        return topic.split('_').map(word => 
-            word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-    }
-
-    updateSuggestions(suggestions) {
-        if (suggestions && suggestions.length > 0) {
-            this.suggestionsList.innerHTML = '';
-            suggestions.forEach(suggestion => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = suggestion;
-                suggestionItem.addEventListener('click', () => {
-                    this.userInput.value = suggestion;
-                    this.userInput.focus();
-                });
-                this.suggestionsList.appendChild(suggestionItem);
-            });
-        }
-    }
-
-    updateConversationDuration() {
-        const duration = new Date() - this.conversationStartTime;
-        const minutes = Math.floor(duration / 60000);
-        const seconds = Math.floor((duration % 60000) / 1000);
-        this.conversationDurationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    addMessage(content, sender) {
+    addMessageToChat(message, sender) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}-message`;
         
@@ -235,7 +177,7 @@ class SentimentBotPro {
         if (sender === 'user') {
             messageDiv.innerHTML = `
                 <div class="message-content">
-                    <p>${this.escapeHtml(content)}</p>
+                    <p>${message}</p>
                     <div class="message-timestamp">${timestamp}</div>
                 </div>
             `;
@@ -245,387 +187,136 @@ class SentimentBotPro {
                     <i class="fas fa-robot"></i>
                 </div>
                 <div class="message-content">
-                    <p>${this.escapeHtml(content)}</p>
+                    <p>${message}</p>
                     <div class="message-timestamp">${timestamp}</div>
                 </div>
             `;
         }
         
         this.chatMessages.appendChild(messageDiv);
-    }
-
-    updateSentimentVisualization(sentimentData) {
-        // Update main sentiment display
-        const sentiment = sentimentData.final_sentiment;
-        const confidence = sentimentData.confidence;
-        const combinedScore = sentimentData.combined_score;
-        
-        // Update score circle
-        this.scoreCircle.className = `score-circle ${sentiment}`;
-        this.scoreText.textContent = (combinedScore * 100).toFixed(0);
-        
-        // Update labels
-        this.sentimentLabel.textContent = this.capitalizeFirst(sentiment);
-        this.confidenceLabel.textContent = this.getConfidenceLevel(confidence);
-        
-        // Update progress bars with animation
-        this.animateProgressBar(this.textblobProgress, sentimentData.textblob.polarity);
-        this.animateProgressBar(this.vaderProgress, sentimentData.vader.compound);
-        this.animateProgressBar(this.keywordProgress, sentimentData.keyword_based);
-        this.animateProgressBar(this.ruleProgress, sentimentData.rule_based);
-        
-        // Update score displays
-        this.textblobScore.textContent = sentimentData.textblob.polarity.toFixed(2);
-        this.vaderScore.textContent = sentimentData.vader.compound.toFixed(2);
-        this.keywordScore.textContent = sentimentData.keyword_based.toFixed(2);
-        this.ruleScore.textContent = sentimentData.rule_based.toFixed(2);
-        
-        // Add visual feedback
-        this.addSentimentFeedback(sentiment);
-    }
-
-    animateProgressBar(progressBar, value) {
-        // Convert value from -1 to 1 range to 0 to 100 range
-        const percentage = ((value + 1) / 2) * 100;
-        
-        // Reset and animate
-        progressBar.style.width = '0%';
-        setTimeout(() => {
-            progressBar.style.width = `${percentage}%`;
-        }, 100);
-    }
-
-    addSentimentFeedback(sentiment) {
-        // Add visual feedback based on sentiment
-        const feedbackClass = `sentiment-${sentiment}`;
-        
-        // Remove existing feedback classes
-        this.sentimentPanel.classList.remove('sentiment-positive', 'sentiment-negative', 'sentiment-neutral');
-        
-        // Add new feedback class
-        this.sentimentPanel.classList.add(feedbackClass);
-        
-        // Add subtle animation
-        this.sentimentPanel.style.transform = 'scale(1.02)';
-        setTimeout(() => {
-            this.sentimentPanel.style.transform = 'scale(1)';
-        }, 200);
-    }
-
-    getConfidenceLevel(confidence) {
-        if (confidence > 0.7) return 'High Confidence';
-        if (confidence > 0.4) return 'Medium Confidence';
-        return 'Low Confidence';
-    }
-
-    capitalizeFirst(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    setLoadingState(loading) {
-        if (loading) {
-            this.sendButton.classList.add('loading');
-            this.userInput.disabled = true;
-        } else {
-            this.sendButton.classList.remove('loading');
-            this.userInput.disabled = false;
-        }
-    }
-
-    updateStatus(status) {
-        const statusText = this.statusIndicator.querySelector('.status-text');
-        const statusDot = this.statusIndicator.querySelector('.status-dot');
-        
-        statusText.textContent = status;
-        
-        // Update status dot color based on status
-        statusDot.className = 'status-dot';
-        if (status === 'Ready') {
-            statusDot.style.background = '#10b981';
-        } else if (status === 'Analyzing...') {
-            statusDot.style.background = '#f59e0b';
-        } else if (status === 'Error') {
-            statusDot.style.background = '#ef4444';
-        }
-    }
-
-    scrollToBottom() {
         this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
     }
 
-    // Long Conversation Methods
-    async analyzeConversation() {
-        try {
-            this.updateStatus('Analyzing...');
-            
-            const response = await fetch('/long_conversation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ session_id: this.sessionId }),
-            });
+    updateSentimentAnalysis(sentimentData) {
+        // Update main sentiment display
+        this.scoreText.textContent = sentimentData.combined_score;
+        this.sentimentLabel.textContent = sentimentData.final_sentiment;
+        this.confidenceLabel.textContent = `Confidence: ${sentimentData.confidence}`;
+        
+        // Update progress bars and scores
+        this.updateProgressBar(this.keywordProgress, this.keywordScore, sentimentData.keyword_based);
+        this.updateProgressBar(this.ruleProgress, this.ruleScore, sentimentData.rule_based);
+        this.updateProgressBar(this.emoticonProgress, this.emoticonScore, sentimentData.emoticon_based);
+        this.updateProgressBar(this.punctuationProgress, this.punctuationScore, sentimentData.punctuation_based);
+        
+        // Update sentiment label color
+        this.updateSentimentLabelColor(sentimentData.final_sentiment);
+    }
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+    updateProgressBar(progressElement, scoreElement, score) {
+        if (progressElement && scoreElement) {
+            const percentage = Math.abs(score) * 100;
+            progressElement.style.width = `${percentage}%`;
+            scoreElement.textContent = score.toFixed(3);
+            
+            // Update progress bar color based on sentiment
+            progressElement.className = 'progress-fill';
+            if (score > 0) {
+                progressElement.classList.add('positive');
+            } else if (score < 0) {
+                progressElement.classList.add('negative');
+            } else {
+                progressElement.classList.add('neutral');
             }
-
-            const data = await response.json();
-            this.displayConversationAnalysis(data);
-            
-        } catch (error) {
-            console.error('Error analyzing conversation:', error);
-            this.addMessage('Sorry, I encountered an error while analyzing our conversation. Please try again.', 'bot');
-        } finally {
-            this.updateStatus('Ready');
         }
     }
 
-    displayConversationAnalysis(data) {
-        // Display conversation analysis
-        if (data.conversation_analysis) {
-            const analysis = data.conversation_analysis;
-            
-            // Update summary stats
-            this.messageCountElement.textContent = analysis.total_messages;
-            this.engagementLevelElement.textContent = analysis.user_engagement;
-            
-            // Display insights
-            this.displayInsights(data.insights);
-            
-            // Display comprehensive suggestions
-            this.displayComprehensiveSuggestions(data.suggestions);
+    updateSentimentLabelColor(sentiment) {
+        this.sentimentLabel.className = 'sentiment-label';
+        this.sentimentLabel.classList.add(sentiment);
+    }
+
+    updateConversationStats() {
+        this.messageCountElement.textContent = this.messageCount;
+        
+        const duration = Math.floor((new Date() - this.conversationStartTime) / 60000);
+        this.conversationDurationElement.textContent = `${duration}m`;
+        
+        // Update engagement level
+        if (this.messageCount < 5) {
+            this.engagementLevelElement.textContent = 'Low';
+        } else if (this.messageCount < 15) {
+            this.engagementLevelElement.textContent = 'Medium';
+        } else {
+            this.engagementLevelElement.textContent = 'High';
         }
     }
 
-    displayInsights(insights) {
-        if (!insights) return;
-        
-        this.insightsContent.innerHTML = '';
-        
-        // Display strengths
-        if (insights.strengths && insights.strengths.length > 0) {
-            insights.strengths.forEach(strength => {
-                const insightItem = document.createElement('div');
-                insightItem.className = 'insight-item';
-                insightItem.textContent = strength;
-                this.insightsContent.appendChild(insightItem);
-            });
-        }
-        
-        // Display areas for growth
-        if (insights.areas_for_growth && insights.areas_for_growth.length > 0) {
-            insights.areas_for_growth.forEach(area => {
-                const insightItem = document.createElement('div');
-                insightItem.className = 'insight-item warning';
-                insightItem.textContent = area;
-                this.insightsContent.appendChild(insightItem);
-            });
-        }
-        
-        // Display recommendations
-        if (insights.recommendations && insights.recommendations.length > 0) {
-            insights.recommendations.forEach(recommendation => {
-                const insightItem = document.createElement('div');
-                insightItem.className = 'insight-item info';
-                insightItem.textContent = recommendation;
-                this.insightsContent.appendChild(insightItem);
-            });
-        }
-        
-        if (this.insightsContent.children.length === 0) {
-            this.insightsContent.innerHTML = '<div class="no-insights">Continue the conversation to see insights</div>';
-        }
+    analyzeConversation() {
+        // Implement conversation analysis logic
+        this.insightsContent.innerHTML = `
+            <div class="insight-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Conversation is ${this.messageCount > 10 ? 'very engaging' : 'developing'}</span>
+            </div>
+            <div class="insight-item">
+                <i class="fas fa-clock"></i>
+                <span>Duration: ${this.conversationDurationElement.textContent}</span>
+            </div>
+        `;
     }
 
-    displayComprehensiveSuggestions(suggestions) {
-        if (!suggestions) return;
+    getSuggestions() {
+        const suggestions = [
+            "Try asking about your day or feelings",
+            "Share something that made you happy or sad",
+            "Discuss your interests or hobbies",
+            "Ask for advice or support"
+        ];
         
-        this.suggestionsList.innerHTML = '';
-        
-        // Display immediate suggestions
-        if (suggestions.immediate && suggestions.immediate.length > 0) {
-            suggestions.immediate.forEach(suggestion => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = `💡 ${suggestion}`;
-                suggestionItem.addEventListener('click', () => {
-                    this.userInput.value = suggestion;
-                    this.userInput.focus();
-                });
-                this.suggestionsList.appendChild(suggestionItem);
-            });
-        }
-        
-        // Display short-term suggestions
-        if (suggestions.short_term && suggestions.short_term.length > 0) {
-            suggestions.short_term.forEach(suggestion => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = `📅 ${suggestion}`;
-                this.suggestionsList.appendChild(suggestionItem);
-            });
-        }
-        
-        // Display long-term suggestions
-        if (suggestions.long_term && suggestions.long_term.length > 0) {
-            suggestions.long_term.forEach(suggestion => {
-                const suggestionItem = document.createElement('div');
-                suggestionItem.className = 'suggestion-item';
-                suggestionItem.textContent = `🎯 ${suggestion}`;
-                this.suggestionsList.appendChild(suggestionItem);
-            });
-        }
-        
-        if (this.suggestionsList.children.length === 0) {
-            this.suggestionsList.innerHTML = '<div class="no-suggestions">Start chatting to get personalized suggestions</div>';
-        }
-    }
-
-    async getSuggestions() {
-        try {
-            this.updateStatus('Generating suggestions...');
-            
-            // Trigger conversation analysis to get fresh suggestions
-            await this.analyzeConversation();
-            
-        } catch (error) {
-            console.error('Error getting suggestions:', error);
-            this.addMessage('Sorry, I encountered an error while generating suggestions. Please try again.', 'bot');
-        } finally {
-            this.updateStatus('Ready');
-        }
+        this.suggestionsList.innerHTML = suggestions.map(suggestion => 
+            `<div class="suggestion-item">${suggestion}</div>`
+        ).join('');
     }
 
     resetSession() {
-        if (confirm('Are you sure you want to start a new conversation session? This will clear all current conversation data.')) {
-            // Generate new session ID
-            this.sessionId = this.generateSessionId();
-            this.conversationStartTime = new Date();
-            this.messageCount = 0;
-            
-            // Clear chat messages
-            this.chatMessages.innerHTML = `
-                <div class="welcome-message">
-                    <div class="bot-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="message-content">
-                        <p>Hello! I'm SentimentBot Pro, your AI companion with advanced sentiment analysis and long conversation capabilities. I can understand how you're feeling, track our conversation topics, and provide intelligent suggestions to keep our discussions engaging and meaningful. How are you today?</p>
-                        <div class="message-timestamp">Just now</div>
-                    </div>
-                </div>
-            `;
-            
-            // Reset conversation features
-            this.messageCountElement.textContent = '0';
-            this.conversationDurationElement.textContent = '0:00';
-            this.engagementLevelElement.textContent = 'Low';
-            this.topicsList.innerHTML = '<div class="no-topics">No topics detected yet</div>';
-            this.suggestionsList.innerHTML = '<div class="no-suggestions">Start chatting to get personalized suggestions</div>';
-            this.insightsContent.innerHTML = '<div class="no-insights">Continue the conversation to see insights</div>';
-            
-            // Reset sentiment visualization
-            this.scoreCircle.className = 'score-circle neutral';
-            this.scoreText.textContent = '-';
-            this.sentimentLabel.textContent = 'Neutral';
-            this.confidenceLabel.textContent = '-';
-            
-            this.addMessage('New conversation session started! I\'m ready to help you with a fresh perspective.', 'bot');
-        }
-    }
-
-    // Utility method to test sentiment analysis
-    async testSentimentAnalysis() {
-        const testMessages = [
-            "I'm feeling absolutely amazing today! Everything is going perfectly! 😊",
-            "I'm having such a terrible day. Nothing is working out for me.",
-            "The weather is okay, I guess. Not too bad, not too good.",
-            "I love this new restaurant! The food is incredible and the service is outstanding!",
-            "I hate this job so much. I'm so frustrated and angry all the time."
-        ];
-
-        console.log('Testing sentiment analysis with sample messages...');
+        this.messageCount = 0;
+        this.conversationStartTime = new Date();
+        this.sessionId = this.generateSessionId();
         
-        for (const message of testMessages) {
-            try {
-                const response = await this.analyzeSentiment(message);
-                console.log(`Message: "${message}"`);
-                console.log(`Sentiment: ${response.sentiment_analysis.final_sentiment}`);
-                console.log(`Confidence: ${response.sentiment_analysis.confidence}`);
-                console.log('---');
-            } catch (error) {
-                console.error(`Error testing message: ${message}`, error);
-            }
+        // Clear chat messages except welcome message
+        const welcomeMessage = this.chatMessages.querySelector('.welcome-message');
+        this.chatMessages.innerHTML = '';
+        if (welcomeMessage) {
+            this.chatMessages.appendChild(welcomeMessage);
         }
+        
+        // Reset sentiment analysis
+        this.scoreText.textContent = '-';
+        this.sentimentLabel.textContent = 'Neutral';
+        this.confidenceLabel.textContent = '-';
+        
+        // Reset progress bars
+        [this.keywordProgress, this.ruleProgress, this.emoticonProgress, this.punctuationProgress].forEach(progress => {
+            if (progress) {
+                progress.style.width = '0%';
+                progress.className = 'progress-fill';
+            }
+        });
+        
+        // Reset scores
+        [this.keywordScore, this.ruleScore, this.emoticonScore, this.punctuationScore].forEach(score => {
+            if (score) score.textContent = '-';
+        });
+        
+        // Reset conversation stats
+        this.updateConversationStats();
+        
+        this.updateStatus('Ready');
     }
 }
 
-// Initialize the chatbot when DOM is loaded
+// Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.sentimentBot = new SentimentBotPro();
-    
-    // Add some helpful tips
-    console.log('SentimentBot Pro initialized! Try saying:');
-    console.log('- "I\'m feeling great today!"');
-    console.log('- "I\'m having a bad day"');
-    console.log('- "How are you?"');
-    console.log('- "Let\'s talk about technology and AI"');
-    console.log('- "I want to discuss my career goals"');
-    
-    // Uncomment the line below to test sentiment analysis with sample messages
-    // window.sentimentBot.testSentimentAnalysis();
+    new SentimentBotPro();
 });
-
-// Add some additional utility functions
-window.SentimentBotUtils = {
-    // Function to manually analyze text without sending to chat
-    async analyzeTextOnly(text) {
-        try {
-            const response = await fetch('/sentiment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: text }),
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            return await response.json();
-        } catch (error) {
-            console.error('Error analyzing text:', error);
-            throw error;
-        }
-    },
-    
-    // Function to get system health
-    async getSystemHealth() {
-        try {
-            const response = await fetch('/health');
-            return await response.json();
-        } catch (error) {
-            console.error('Error getting system health:', error);
-            throw error;
-        }
-    },
-    
-    // Function to get conversation summary
-    async getConversationSummary(sessionId) {
-        try {
-            const response = await fetch(`/conversation_summary/${sessionId}`);
-            return await response.json();
-        } catch (error) {
-            console.error('Error getting conversation summary:', error);
-            throw error;
-        }
-    }
-};
