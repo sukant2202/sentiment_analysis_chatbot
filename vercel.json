@@ -9,10 +9,10 @@
   "routes": [
     {
       "src": "/",
-      "dest": "/index.html"
+      "dest": "/templates/index.html"
     },
     {
-      "src": "/templates/(.*)",
+      "src": "/static/(.*)",
       "dest": "/templates/$1"
     },
     {
