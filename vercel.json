@@ -3,35 +3,17 @@
   "builds": [
     {
       "src": "app.py",
-      "use": "@vercel/python",
-      "config": { 
-        "maxLambdaSize": "15mb", 
-        "runtime": "python3.9"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/styles.css",
-      "dest": "/templates/styles.css"
-    },
-    {
-      "src": "/script.js",
-      "dest": "/templates/script.js"
+      "src": "/templates/(.*)",
+      "dest": "/templates/$1"
     },
     {
       "src": "/(.*)",
       "dest": "/app.py"
     }
-  ],
-  "functions": {
-    "app.py": {
-      "maxDuration": 30
-    }
-  },
-  "env": {
-    "FLASK_ENV": "production",
-    "PORT": "5000",
-    "NLTK_DATA_PATH": "/tmp/nltk_data"
-  }
+  ]
 }
