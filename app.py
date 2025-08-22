@@ -640,9 +640,6 @@ if __name__ == '__main__':
 # For Vercel deployment
 app.debug = False
 
-# Ensure CORS is properly configured for Vercel
-CORS(app, origins=["*"], methods=["GET", "POST", "OPTIONS"])
-
 # Add error handling for Vercel
 @app.errorhandler(404)
 def not_found(error):

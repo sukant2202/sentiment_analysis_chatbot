@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: sentimentbot-pro
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn index:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.16
+      - key: NLTK_DATA_PATH
+        value: /tmp/nltk_data
