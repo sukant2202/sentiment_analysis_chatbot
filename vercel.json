@@ -18,10 +18,5 @@
   ],
   "env": {
     "NLTK_DATA_PATH": "/tmp/nltk_data"
-  },
-  "functions": {
-    "index.py": {
-      "maxDuration": 10
-    }
   }
 }
