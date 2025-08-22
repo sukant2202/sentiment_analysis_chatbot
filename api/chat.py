@@ -1,8 +1,7 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from textblob import TextBlob
 import nltk
-import re
 import json
 from datetime import datetime
 import os
@@ -43,21 +42,6 @@ from nltk.corpus import stopwords
 vader_analyzer = SentimentIntensityAnalyzer()
 stop_words = set(stopwords.words('english'))
 
-# Try to import optional dependencies
-try:
-    import numpy as np
-    NUMPY_AVAILABLE = True
-except ImportError:
-    NUMPY_AVAILABLE = False
-    print("Warning: numpy not available, some features may be limited")
-
-try:
-    import pandas as pd
-    PANDAS_AVAILABLE = True
-except ImportError:
-    PANDAS_AVAILABLE = False
-    print("Warning: pandas not available, some features may be limited")
-
 # Sentiment keywords for enhanced analysis
 POSITIVE_WORDS = {
     'good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'awesome',
@@ -89,11 +73,6 @@ conversation_contexts = defaultdict(lambda: {
     'user_interests': set(),
     'suggested_topics': []
 })
-
-# Remove the home route since we're serving index.html directly
-# @app.route('/')
-# def home():
-#     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
