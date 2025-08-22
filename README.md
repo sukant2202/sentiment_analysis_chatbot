@@ -221,12 +221,17 @@ python app.py
 ```
 
 ### Production Deployment
-1. Set `FLASK_ENV=production`
-2. Use a production WSGI server (Gunicorn, uWSGI)
-3. Set up reverse proxy (Nginx, Apache)
-4. Configure environment variables
 
-### Docker Deployment
+#### Option 1: Traditional Server
+```bash
+# Install gunicorn
+pip install gunicorn
+
+# Run with gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 app:app
+```
+
+#### Option 2: Docker
 ```dockerfile
 FROM python:3.9-slim
 WORKDIR /app
@@ -234,8 +239,34 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 5000
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
 ```
+
+#### Option 3: Vercel (Recommended)
+1. **Install Vercel CLI**:
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Login to Vercel**:
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy**:
+   ```bash
+   # Using deployment script
+   ./deploy.sh          # Unix/macOS
+   deploy.bat           # Windows
+   
+   # Or manually
+   vercel --prod
+   ```
+
+4. **Environment Variables** (set in Vercel dashboard):
+   - `FLASK_ENV`: `production`
+   - `PORT`: `5000`
+   - `NLTK_DATA_PATH`: `/tmp/nltk_data`
 
 ## 🧪 Testing
 

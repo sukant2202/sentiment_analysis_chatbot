@@ -14,7 +14,7 @@ body {
 }
 
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
@@ -43,7 +43,7 @@ body {
 /* Main Content Layout */
 .main-content {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 800px;
     gap: 30px;
     align-items: start;
 }
@@ -232,6 +232,13 @@ body {
     font-style: italic;
 }
 
+/* Side Panels Container */
+.side-panels {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 /* Sentiment Panel */
 .sentiment-panel {
     background: white;
@@ -359,7 +366,6 @@ body {
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
-    border-radius: 4px;
     transition: width 0.8s ease;
     width: 0%;
 }
@@ -372,15 +378,246 @@ body {
     text-align: right;
 }
 
+/* Long Conversation Panel */
+.long-conversation-panel {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+    height: fit-content;
+}
+
+.long-conversation-panel .panel-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+/* Conversation Summary */
+.conversation-summary {
+    margin-bottom: 25px;
+}
+
+.conversation-summary h4 {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Topic Detection */
+.topic-detection {
+    margin-bottom: 25px;
+}
+
+.topic-detection h4 {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.topics-list {
+    min-height: 60px;
+}
+
+.topic-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin: 3px;
+    font-weight: 500;
+}
+
+.no-topics {
+    color: #9ca3af;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Intelligent Suggestions */
+.intelligent-suggestions {
+    margin-bottom: 25px;
+}
+
+.intelligent-suggestions h4 {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.suggestions-list {
+    min-height: 80px;
+}
+
+.suggestion-item {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #92400e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.suggestion-item:hover {
+    background: #fde68a;
+    transform: translateX(5px);
+}
+
+.no-suggestions {
+    color: #9ca3af;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Conversation Insights */
+.conversation-insights {
+    margin-bottom: 25px;
+}
+
+.conversation-insights h4 {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.insights-content {
+    min-height: 80px;
+}
+
+.insight-item {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #065f46;
+}
+
+.insight-item.warning {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+    color: #991b1b;
+}
+
+.insight-item.info {
+    background: #eff6ff;
+    border-left-color: #3b82f6;
+    color: #1e40af;
+}
+
+.no-insights {
+    color: #9ca3af;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.3);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.action-btn.secondary {
+    background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+}
+
+.action-btn.secondary:hover {
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+}
+
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1400px) {
+    .main-content {
+        grid-template-columns: 1fr 700px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 1200px) {
     .main-content {
         grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .sentiment-panel {
+    .side-panels {
         order: -1;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
     }
 }
 
@@ -416,6 +653,14 @@ body {
     .method-score {
         width: auto;
         text-align: left;
+    }
+    
+    .side-panels {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-stats {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -464,4 +709,45 @@ body {
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* Topic-specific styling */
+.topic-technology {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.topic-health {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.topic-education {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.topic-work {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.topic-relationships {
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+}
+
+.topic-finance {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.topic-travel {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+}
+
+.topic-hobbies {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+}
+
+.topic-current_events {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+}
+
+.topic-personal_development {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis Chatbot</title>
+    <title>SentimentBot - AI-Powered Sentiment Analysis & Long Conversation Chatbot</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -12,8 +12,8 @@
     <div class="container">
         <header class="header">
             <div class="header-content">
-                <h1><i class="fas fa-robot"></i> SentimentBot</h1>
-                <p>AI-powered chatbot with advanced sentiment analysis</p>
+                <h1><i class="fas fa-robot"></i> SentimentBot Pro</h1>
+                <p>Advanced AI chatbot with sentiment analysis & intelligent long conversation support</p>
             </div>
         </header>
 
@@ -33,7 +33,7 @@
                             <i class="fas fa-robot"></i>
                         </div>
                         <div class="message-content">
-                            <p>Hello! I'm SentimentBot, your AI companion with sentiment analysis capabilities. I can understand how you're feeling and respond accordingly. How are you today?</p>
+                            <p>Hello! I'm SentimentBot Pro, your AI companion with advanced sentiment analysis and long conversation capabilities. I can understand how you're feeling, track our conversation topics, and provide intelligent suggestions to keep our discussions engaging and meaningful. How are you today?</p>
                             <div class="message-timestamp">Just now</div>
                         </div>
                     </div>
@@ -48,64 +48,135 @@
                     </div>
                     <div class="input-hint">
                         <i class="fas fa-lightbulb"></i>
-                        Try saying: "I'm feeling great today!" or "I'm having a bad day"
+                        Try: "I'm feeling great today!" or start a long conversation about technology, health, work, or any topic you're passionate about
                     </div>
                 </div>
             </div>
 
-            <div class="sentiment-panel" id="sentimentPanel">
-                <div class="panel-header">
-                    <h3><i class="fas fa-chart-line"></i> Sentiment Analysis</h3>
-                    <button class="panel-toggle" id="panelToggle">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-                
-                <div class="panel-content" id="panelContent">
-                    <div class="sentiment-overview">
-                        <div class="sentiment-score">
-                            <div class="score-circle" id="scoreCircle">
-                                <span class="score-text" id="scoreText">-</span>
+            <div class="side-panels">
+                <!-- Sentiment Analysis Panel -->
+                <div class="sentiment-panel" id="sentimentPanel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-chart-line"></i> Sentiment Analysis</h3>
+                        <button class="panel-toggle" id="sentimentPanelToggle">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="panel-content" id="sentimentPanelContent">
+                        <div class="sentiment-overview">
+                            <div class="sentiment-score">
+                                <div class="score-circle" id="scoreCircle">
+                                    <span class="score-text" id="scoreText">-</span>
+                                </div>
+                                <div class="score-label">
+                                    <span class="sentiment-label" id="sentimentLabel">Neutral</span>
+                                    <span class="confidence-label" id="confidenceLabel">-</span>
+                                </div>
                             </div>
-                            <div class="score-label">
-                                <span class="sentiment-label" id="sentimentLabel">Neutral</span>
-                                <span class="confidence-label" id="confidenceLabel">-</span>
+                            
+                            <div class="sentiment-breakdown">
+                                <h4>Analysis Breakdown</h4>
+                                <div class="breakdown-item">
+                                    <span class="method-name">TextBlob</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="textblobProgress"></div>
+                                    </div>
+                                    <span class="method-score" id="textblobScore">-</span>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <span class="method-name">VADER</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="vaderProgress"></div>
+                                    </div>
+                                    <span class="method-score" id="vaderScore">-</span>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <span class="method-name">Keywords</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="keywordProgress"></div>
+                                    </div>
+                                    <span class="method-score" id="keywordScore">-</span>
+                                </div>
+                                
+                                <div class="breakdown-item">
+                                    <span class="method-name">Rules</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="ruleProgress"></div>
+                                    </div>
+                                    <span class="method-score" id="ruleScore">-</span>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="sentiment-breakdown">
-                            <h4>Analysis Breakdown</h4>
-                            <div class="breakdown-item">
-                                <span class="method-name">TextBlob</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="textblobProgress"></div>
+                    </div>
+                </div>
+
+                <!-- Long Conversation Panel -->
+                <div class="long-conversation-panel" id="longConversationPanel">
+                    <div class="panel-header">
+                        <h3><i class="fas fa-brain"></i> Long Conversation</h3>
+                        <button class="panel-toggle" id="longConversationPanelToggle">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="panel-content" id="longConversationPanelContent">
+                        <!-- Conversation Summary -->
+                        <div class="conversation-summary">
+                            <h4><i class="fas fa-info-circle"></i> Conversation Summary</h4>
+                            <div class="summary-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Messages:</span>
+                                    <span class="stat-value" id="messageCount">0</span>
                                 </div>
-                                <span class="method-score" id="textblobScore">-</span>
-                            </div>
-                            
-                            <div class="breakdown-item">
-                                <span class="method-name">VADER</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="vaderProgress"></div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Duration:</span>
+                                    <span class="stat-value" id="conversationDuration">0:00</span>
                                 </div>
-                                <span class="method-score" id="vaderScore">-</span>
-                            </div>
-                            
-                            <div class="breakdown-item">
-                                <span class="method-name">Keywords</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="keywordProgress"></div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Engagement:</span>
+                                    <span class="stat-value" id="engagementLevel">Low</span>
                                 </div>
-                                <span class="method-score" id="keywordScore">-</span>
                             </div>
-                            
-                            <div class="breakdown-item">
-                                <span class="method-name">Rules</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="ruleProgress"></div>
-                                </div>
-                                <span class="method-score" id="ruleScore">-</span>
+                        </div>
+
+                        <!-- Topic Detection -->
+                        <div class="topic-detection">
+                            <h4><i class="fas fa-tags"></i> Topics Discussed</h4>
+                            <div class="topics-list" id="topicsList">
+                                <div class="no-topics">No topics detected yet</div>
                             </div>
+                        </div>
+
+                        <!-- Intelligent Suggestions -->
+                        <div class="intelligent-suggestions">
+                            <h4><i class="fas fa-lightbulb"></i> Suggestions</h4>
+                            <div class="suggestions-list" id="suggestionsList">
+                                <div class="no-suggestions">Start chatting to get personalized suggestions</div>
+                            </div>
+                        </div>
+
+                        <!-- Conversation Insights -->
+                        <div class="conversation-insights">
+                            <h4><i class="fas fa-chart-bar"></i> Insights</h4>
+                            <div class="insights-content" id="insightsContent">
+                                <div class="no-insights">Continue the conversation to see insights</div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="action-btn" id="analyzeConversationBtn">
+                                <i class="fas fa-analytics"></i> Analyze Conversation
+                            </button>
+                            <button class="action-btn" id="getSuggestionsBtn">
+                                <i class="fas fa-magic"></i> Get Suggestions
+                            </button>
+                            <button class="action-btn" id="resetSessionBtn">
+                                <i class="fas fa-refresh"></i> New Session
+                            </button>
                         </div>
                     </div>
                 </div>
