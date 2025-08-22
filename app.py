@@ -40,6 +40,21 @@ from nltk.corpus import stopwords
 vader_analyzer = SentimentIntensityAnalyzer()
 stop_words = set(stopwords.words('english'))
 
+# Try to import optional dependencies
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+    print("Warning: numpy not available, some features may be limited")
+
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    print("Warning: pandas not available, some features may be limited")
+
 # Sentiment keywords for enhanced analysis
 POSITIVE_WORDS = {
     'good', 'great', 'excellent', 'amazing', 'wonderful', 'fantastic', 'awesome',
@@ -620,4 +635,10 @@ def get_conversation_summary_endpoint(session_id):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
+
+# For Vercel deployment
+app.debug = False
+
+# Ensure CORS is properly configured for Vercel
+CORS(app, origins=["*"], methods=["GET", "POST", "OPTIONS"])

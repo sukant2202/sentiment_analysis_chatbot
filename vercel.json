@@ -4,18 +4,13 @@
     {
       "src": "app.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.9" }
-    },
-    {
-      "src": "templates/**",
-      "use": "@vercel/static"
+      "config": { 
+        "maxLambdaSize": "15mb", 
+        "runtime": "python3.9"
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "app.py"
-    },
     {
       "src": "/styles.css",
       "dest": "/templates/styles.css"
@@ -23,8 +18,17 @@
     {
       "src": "/script.js",
       "dest": "/templates/script.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app.py"
     }
   ],
+  "functions": {
+    "app.py": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "FLASK_ENV": "production",
     "PORT": "5000",
