@@ -21,6 +21,9 @@ coverage.xml
 .pytest_cache
 .hypothesis
 
+# Main app file (not needed for Vercel API)
+app.py
+
 # IDE files
 .vscode/
 .idea/
