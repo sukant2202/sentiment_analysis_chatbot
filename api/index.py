@@ -90,9 +90,10 @@ conversation_contexts = defaultdict(lambda: {
     'suggested_topics': []
 })
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+# Remove the home route since we're serving index.html directly
+# @app.route('/')
+# def home():
+#     return render_template('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
